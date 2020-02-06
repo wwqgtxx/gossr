@@ -6,6 +6,7 @@ import (
 
 func init() {
 	register("plain", newPlainObfs)
+	register("origin", newPlainObfs)
 }
 
 type plain struct {

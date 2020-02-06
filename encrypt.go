@@ -87,6 +87,10 @@ func newCast5Stream(key, iv []byte, doe DecOrEnc) (cipher.Stream, error) {
 	return newCFBStream(block, err, key, iv, doe)
 }
 
+func newRC4Stream(key, iv []byte, _ DecOrEnc) (cipher.Stream, error) {
+	return rc4.NewCipher(key)
+}
+
 func newRC4MD5Stream(key, iv []byte, _ DecOrEnc) (cipher.Stream, error) {
 	h := md5.New()
 	h.Write(key)
@@ -165,6 +169,16 @@ func newSeedStream(key, iv []byte, doe DecOrEnc) (cipher.Stream, error) {
 	return newCFBStream(block, err, key, iv, doe)
 }
 
+type NoneStream struct{}
+
+func (s NoneStream) XORKeyStream(dst, src []byte) {
+	copy(dst, src)
+}
+
+func newNoneStream(key, iv []byte, _ DecOrEnc) (cipher.Stream, error) {
+	return NoneStream{}, nil
+}
+
 type cipherInfo struct {
 	keyLen    int
 	ivLen     int
@@ -172,6 +186,7 @@ type cipherInfo struct {
 }
 
 var streamCipherMethod = map[string]*cipherInfo{
+	"none":             {16, 0, newNoneStream},
 	"aes-128-cfb":      {16, 16, newAESCFBStream},
 	"aes-192-cfb":      {24, 16, newAESCFBStream},
 	"aes-256-cfb":      {32, 16, newAESCFBStream},
@@ -184,6 +199,7 @@ var streamCipherMethod = map[string]*cipherInfo{
 	"des-cfb":          {8, 8, newDESStream},
 	"bf-cfb":           {16, 8, newBlowFishStream},
 	"cast5-cfb":        {16, 8, newCast5Stream},
+	"rc4":              {16, 0, newRC4Stream},
 	"rc4-md5":          {16, 16, newRC4MD5Stream},
 	"rc4-md5-6":        {16, 6, newRC4MD5Stream},
 	"chacha20":         {32, 8, newChaCha20Stream},

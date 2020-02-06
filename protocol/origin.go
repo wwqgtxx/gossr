@@ -30,11 +30,10 @@ func (o *origin) PreEncrypt(data []byte) (encryptedData []byte, err error) {
 }
 
 func (o *origin) PostDecrypt(data []byte) ([]byte, int, error) {
-	return data, 0, nil
+	return data, len(data), nil
 }
 
 func (o *origin) SetData(data interface{}) {
-
 }
 
 func (o *origin) GetData() interface{} {
