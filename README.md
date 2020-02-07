@@ -29,8 +29,8 @@ bi.Pipe(dst, src)
 
 See 'example/client.go' for detailed usage.
 
-#### SS Encrypting algorithm
-
+#### SSR Encrypting algorithm
+* none
 * aes-128-cfb
 * aes-192-cfb
 * aes-256-cfb
