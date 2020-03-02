@@ -20,9 +20,9 @@ func NewAuthAES128SHA1() IProtocol {
 			recvID: 1,
 			buffer: bytes.NewBuffer(nil),
 		},
-		data: &authData{
-			connectionID: 0xFF000001,
-		},
+		//data: &authData{
+		//	connectionID: 0xFF000001,
+		//},
 	}
 	return a
 }

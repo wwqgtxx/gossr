@@ -172,23 +172,29 @@ func (c *SSTCPConn) doRead(b []byte) (n int, err error) {
 			decodedData = decodedData[c.info.ivLen:]
 		}
 		buf := make([]byte, decodelength)
+		// decrypt decodedData and save it to buf
 		c.decrypt(buf, decodedData)
-
+		// append buf to c.readEncryptBuf
 		c.readEncryptBuf.Write(buf)
+		// and read it to encryptbuf immediately
 		encryptbuf := c.readEncryptBuf.Bytes()
+		// then reset it
 		c.readEncryptBuf.Reset()
 		postDecryptedData, length, err := c.IProtocol.PostDecrypt(encryptbuf)
 		if err != nil {
 			return 0, err
 		}
 		if length == 0 {
+			// not enough to decrypt
 			c.readEncryptBuf.Write(encryptbuf)
 			return 0, nil
+		} else if length > 0 {
+			// append un-decrypt data to buf
+			c.readEncryptBuf.Write(encryptbuf[length:])
+		} else {
+			// not use readEncryptBuf
 		}
 
-		if length > 0 {
-			c.readEncryptBuf.Write(encryptbuf[length:])
-		}
 		postDecryptedlength := len(postDecryptedData)
 		blength := len(b)
 		copy(b, postDecryptedData)
@@ -242,11 +248,12 @@ func (c *SSTCPConn) preWrite(b []byte) (outData []byte, err error) {
 
 func (c *SSTCPConn) Write(b []byte) (n int, err error) {
 	outData, err := c.preWrite(b)
-	if err == nil {
-		n, err = c.Conn.Write(outData)
-		if err != nil {
-			return n, err
-		}
+	if err != nil {
+		return len(b), nil
+	}
+	n, err = c.Conn.Write(outData)
+	if err != nil {
+		return 0, err
 	}
 	return len(b), nil
 }
