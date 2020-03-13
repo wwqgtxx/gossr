@@ -50,7 +50,6 @@ func (a *authSHA1v4) GetData() interface{} {
 func (a *authSHA1v4) packData(data []byte) (outData []byte) {
 	dataLength := len(data)
 	randLength := 1
-	rand.Seed(time.Now().UnixNano())
 	if dataLength <= 1300 {
 		if dataLength > 400 {
 			randLength += rand.Intn(128)
@@ -85,7 +84,6 @@ func (a *authSHA1v4) packData(data []byte) (outData []byte) {
 }
 
 func (a *authSHA1v4) packAuthData(data []byte) (outData []byte) {
-	rand.Seed(time.Now().UnixNano())
 	dataLength := len(data)
 	randLength := 1
 	if dataLength <= 1300 {

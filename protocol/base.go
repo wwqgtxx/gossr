@@ -2,10 +2,16 @@ package protocol
 
 import (
 	"errors"
+	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/alex4ord/gossr/ssr"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 type creator func() IProtocol
 
