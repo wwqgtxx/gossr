@@ -4,6 +4,8 @@ import (
 	"errors"
 	"io"
 	"net"
+
+	"github.com/wwqgtxx/gossr/protocol"
 )
 
 // ErrShortPacket means the packet is too short to be a valid encrypted packet.
@@ -11,23 +13,34 @@ var ErrShortPacket = errors.New("short packet")
 
 // Pack encrypts plaintext using stream cipher s and a random IV.
 // Returns a slice of dst containing random IV and ciphertext.
-// Ensure len(dst) >= s.IVSize() + len(plaintext).
-func Pack(dst, plaintext []byte, s *StreamCipher) ([]byte, error) {
-	if len(dst) < s.info.ivLen+len(plaintext) {
-		return nil, io.ErrShortBuffer
-	}
+func (c *PacketConn) Pack(plaintext []byte) ([]byte, error) {
+	s := c.StreamCipher
 	iv, err := s.initEncrypt()
 	if err != nil {
 		return nil, err
 	}
-	copy(dst[:s.info.ivLen], iv)
-	s.encrypt(dst[s.info.ivLen:], plaintext)
-	return dst[:s.info.ivLen+len(plaintext)], nil
+
+	protocolServerInfo := c.IProtocol.GetServerInfo()
+	protocolServerInfo.SetHeadLen(plaintext, 30)
+	protocolServerInfo.IV, protocolServerInfo.IVLen = c.IV()
+	protocolServerInfo.Key, protocolServerInfo.KeyLen = c.Key()
+	c.IProtocol.SetServerInfo(protocolServerInfo)
+
+	preEncryptedData, err := c.IProtocol.UdpPreEncrypt(plaintext)
+	if err != nil {
+		return nil, err
+	}
+	preEncryptedDataLen := len(preEncryptedData)
+	encryptedData := make([]byte, preEncryptedDataLen+s.info.ivLen)
+	copy(encryptedData[:s.info.ivLen], iv)
+	s.encrypt(encryptedData[s.info.ivLen:s.info.ivLen+preEncryptedDataLen], preEncryptedData)
+	return encryptedData, nil
 }
 
 // Unpack decrypts pkt using stream cipher s.
 // Returns a slice of dst containing decrypted plaintext.
-func Unpack(dst, pkt []byte, s *StreamCipher) ([]byte, error) {
+func (c *PacketConn) Unpack(dst, pkt []byte) ([]byte, error) {
+	s := c.StreamCipher
 	if len(pkt) < s.info.ivLen {
 		return nil, ErrShortPacket
 	}
@@ -37,14 +50,24 @@ func Unpack(dst, pkt []byte, s *StreamCipher) ([]byte, error) {
 	}
 
 	iv := pkt[:s.info.ivLen]
-	s.initDecrypt(iv)
+	err := s.initDecrypt(iv)
+	if err != nil {
+		return nil, err
+	}
 	s.decrypt(dst, pkt[s.info.ivLen:])
-	return dst[:len(pkt)-s.info.ivLen], nil
+	dst = dst[:len(pkt)-s.info.ivLen]
+	postDecryptedData, length, err := c.IProtocol.UdpPostDecrypt(dst)
+	if err != nil || length == 0 {
+		return nil, err
+	}
+
+	return postDecryptedData, nil
 }
 
 type PacketConn struct {
 	net.PacketConn
 	*StreamCipher
+	IProtocol protocol.IProtocol
 }
 
 // NewPacketConn wraps a net.PacketConn with stream cipher encryption/decryption.
@@ -53,8 +76,7 @@ func NewSSUDPConn(c net.PacketConn, cipher *StreamCipher) net.PacketConn {
 }
 
 func (c *PacketConn) WriteTo(b []byte, addr net.Addr) (int, error) {
-	buf := make([]byte, len(c.iv)+len(b))
-	_, err := Pack(buf, b, c.StreamCipher)
+	buf, err := c.Pack(b)
 	if err != nil {
 		return 0, err
 	}
@@ -67,6 +89,6 @@ func (c *PacketConn) ReadFrom(b []byte) (int, net.Addr, error) {
 	if err != nil {
 		return n, addr, err
 	}
-	b, err = Unpack(b, b[:n], c.StreamCipher)
+	b, err = c.Unpack(b, b[:n])
 	return len(b), addr, err
 }

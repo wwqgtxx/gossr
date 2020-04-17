@@ -33,6 +33,14 @@ func (o *origin) PostDecrypt(data []byte) ([]byte, int, error) {
 	return data, len(data), nil
 }
 
+func (o *origin) UdpPreEncrypt(data []byte) (encryptedData []byte, err error) {
+	return data, nil
+}
+
+func (o *origin) UdpPostDecrypt(data []byte) ([]byte, int, error) {
+	return data, len(data), nil
+}
+
 func (o *origin) SetData(data interface{}) {
 }
 

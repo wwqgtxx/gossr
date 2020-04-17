@@ -25,6 +25,8 @@ type IProtocol interface {
 	GetServerInfo() *ssr.ServerInfoForObfs
 	PreEncrypt(data []byte) ([]byte, error)
 	PostDecrypt(data []byte) ([]byte, int, error)
+	UdpPreEncrypt(data []byte) ([]byte, error)
+	UdpPostDecrypt(data []byte) ([]byte, int, error)
 	SetData(data interface{})
 	GetData() interface{}
 }

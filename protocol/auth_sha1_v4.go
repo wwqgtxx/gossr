@@ -224,3 +224,11 @@ func (a *authSHA1v4) PostDecrypt(plainData []byte) (outData []byte, n int, err e
 	}
 	return outData, len(plainData) - dataLength, nil
 }
+
+func (o *authSHA1v4) UdpPreEncrypt(data []byte) (encryptedData []byte, err error) {
+	return data, nil
+}
+
+func (o *authSHA1v4) UdpPostDecrypt(data []byte) ([]byte, int, error) {
+	return data, len(data), nil
+}

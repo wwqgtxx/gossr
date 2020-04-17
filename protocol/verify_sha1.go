@@ -99,3 +99,11 @@ func (v *verifySHA1) PreEncrypt(data []byte) (encryptedData []byte, err error) {
 func (v *verifySHA1) PostDecrypt(data []byte) ([]byte, int, error) {
 	return data, 0, nil
 }
+
+func (o *verifySHA1) UdpPreEncrypt(data []byte) (encryptedData []byte, err error) {
+	return data, nil
+}
+
+func (o *verifySHA1) UdpPostDecrypt(data []byte) ([]byte, int, error) {
+	return data, len(data), nil
+}
