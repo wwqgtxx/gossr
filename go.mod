@@ -1,4 +1,4 @@
-module github.com/alex4ord/gossr
+module github.com/wwqgtxx/gossr
 
 go 1.13
 

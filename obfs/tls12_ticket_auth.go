@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alex4ord/gossr/ssr"
-	"github.com/alex4ord/gossr/tools"
+	"github.com/wwqgtxx/gossr/ssr"
+	"github.com/wwqgtxx/gossr/tools"
 )
 
 func init() {

@@ -12,8 +12,8 @@ import (
 
 	"github.com/aead/chacha20"
 
-	"github.com/alex4ord/gossr/tools"
-	"github.com/alex4ord/gossr/tools/leakybuf"
+	"github.com/wwqgtxx/gossr/tools"
+	"github.com/wwqgtxx/gossr/tools/leakybuf"
 
 	"github.com/dgryski/go-camellia"
 	"github.com/dgryski/go-idea"

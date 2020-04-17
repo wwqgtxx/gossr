@@ -1,7 +1,7 @@
 package protocol
 
 import (
-	"github.com/alex4ord/gossr/ssr"
+	"github.com/wwqgtxx/gossr/ssr"
 )
 
 func init() {

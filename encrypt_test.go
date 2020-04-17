@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/alex4ord/gossr/tools"
+	"github.com/wwqgtxx/gossr/tools"
 )
 
 const text = "Don't tell me the moon is shining; show me the glint of light on broken glass."
